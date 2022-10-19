@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Src/adc.c \
 ../Src/gpio.c \
 ../Src/interrupt.c \
 ../Src/main.c \
@@ -15,6 +16,7 @@ C_SRCS += \
 ../Src/timer.c 
 
 C_DEPS += \
+./Src/adc.d \
 ./Src/gpio.d \
 ./Src/interrupt.d \
 ./Src/main.d \
@@ -25,6 +27,7 @@ C_DEPS += \
 ./Src/timer.d 
 
 OBJS += \
+./Src/adc.o \
 ./Src/gpio.o \
 ./Src/interrupt.o \
 ./Src/main.o \
@@ -42,7 +45,7 @@ Src/%.o Src/%.su: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/interrupt.d ./Src/interrupt.o ./Src/interrupt.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/rcc.d ./Src/rcc.o ./Src/rcc.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system_stm32f7xx.d ./Src/system_stm32f7xx.o ./Src/system_stm32f7xx.su ./Src/timer.d ./Src/timer.o ./Src/timer.su
+	-$(RM) ./Src/adc.d ./Src/adc.o ./Src/adc.su ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/interrupt.d ./Src/interrupt.o ./Src/interrupt.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/rcc.d ./Src/rcc.o ./Src/rcc.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/system_stm32f7xx.d ./Src/system_stm32f7xx.o ./Src/system_stm32f7xx.su ./Src/timer.d ./Src/timer.o ./Src/timer.su
 
 .PHONY: clean-Src
 

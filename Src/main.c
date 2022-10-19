@@ -22,6 +22,8 @@
 #include "gpio.h"
 #include "timer.h"
 #include "interrupt.h"
+#include "adc.h"
+
 
 int main(void)
 {
@@ -29,6 +31,7 @@ int main(void)
 	init_GPIO();
 	init_TIMER8();
 	init_INTERRUPT();
+	init_ADC();
 
 
 
