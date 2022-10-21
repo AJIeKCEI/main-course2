@@ -39,6 +39,10 @@ void init_TIMER8(void)
 	//Влючение прерывания по обновлению
 	TIM8->DIER|=TIM_DIER_UIE;
 
+	TIM8->CR2|= TIM_CR2_MMS_1;
+
+
+
 	//	Вкл. счет таймера.
 	TIM8->CR1|= TIM_CR1_CEN;
 
