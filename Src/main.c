@@ -23,15 +23,21 @@
 #include "timer.h"
 #include "interrupt.h"
 #include "adc.h"
+#include "dma.h"
+#include "dac.h"
 
 
 int main(void)
 {
+	init_INTERRUPT();
 	init_RCC();
 	init_GPIO();
-	init_TIMER8();
-	init_INTERRUPT();
+	init_DMA();
 	init_ADC();
+	init_TIMER8();
+	init_DAC();
+	init_RCC();
+
 
 
 

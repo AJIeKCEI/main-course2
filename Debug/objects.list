@@ -1,5 +1,7 @@
 "./Src/adc.o"
+"./Src/dac.o"
 "./Src/dma.o"
+"./Src/dsp.o"
 "./Src/gpio.o"
 "./Src/interrupt.o"
 "./Src/main.o"
