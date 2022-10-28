@@ -2,7 +2,7 @@
 #define __DSP_H__
 
 #define MAX_MOVING_FLOAT_SIZE (500)
-#define MAX_MEDIAN_FLOAT_SIZE (250)
+#define MAX_MEDIAN_FLOAT_SIZE (500)
 
 
 void init_DSP(void);
@@ -32,8 +32,8 @@ typedef struct
 float MovingFloatFilter(MovingFloatFilter_Struct * filter, float x);
 float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x);
 
-extern MovingFloatFilter_Struct TEMPERATURE_MOV;
+extern MovingFloatFilter_Struct FILTER_MOV;
 
-extern MovingFloatFilter_Struct TEMPERATURE_MFF;
+extern MovingFloatFilter_Struct FILTERE_MFF;
 
 #endif

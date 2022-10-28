@@ -28,8 +28,12 @@ void init_GPIO_AFunction(GPIO_TypeDef *gpio, unsigned int pin, unsigned int AF);
 
 void init_GPIO(void)
 {
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
-	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN; //тактируем порт B
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN; //тактируем порт C
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN; //тактируем порт D
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN; //тактируем порт A
+	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN; //тактируем порт F
+
 
 	init_GPIO_Output(GPIOD, 1);
 	init_GPIO_AFunction(GPIOC,6,3);

@@ -25,7 +25,7 @@
 #include "adc.h"
 #include "dma.h"
 #include "dac.h"
-
+#include "control.h"
 
 int main(void)
 {
@@ -46,5 +46,8 @@ int main(void)
     {
         for(int i = 0; i < 100000; i++);
         GPIOD->ODR ^= 1 << 1;
+
+        if (!(GPIOB->IDR&(1<<1)))
+        	Boost_Measure.count = SET_SHIFTS_MAX_COUNT;
     }
 }

@@ -57,36 +57,5 @@ void TIM8_UP_TIM13_IRQHandler(void)
 
 }*/
 
-void DMA2_Stream0_IRQHandler(void)
-{
-    // Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
-    DMA2->LIFCR |= DMA_LIFCR_CTCIF0;
-
-    // Ожидание выполнения всех инструкций в конвейере (pipeline).
-    __ISB();
-
-    const float av_slope = 2.5 * 0.001;
-    const float v25 = 0.76;
-
-    extern volatile unsigned int ADC_Buffer[];
-
-    float v_sense = (float)ADC_Buffer[3] * (3.3f/4095.f);
-
-    volatile float TEMPERATURE;
-
-    TEMPERATURE = (v_sense - v25)/av_slope + 25.f;
-
-    unsigned int dac1, dac2;
-    // вывод температуры
-    dac1 = TEMPERATURE*(4095.f/100.f);
-
-    dac2 = MovingFloatFilter(&TEMPERATURE_MOV, TEMPERATURE) * (4095.f/100.f);
-
-
-
-    // Запись чисел в ЦАП1 и ЦАП2.
-    DAC->DHR12RD = dac1 | (dac2 << 16);
-
-}
 
 

@@ -2,9 +2,9 @@
 #include "dsp.h"
 #include <stdlib.h>
 
-MovingFloatFilter_Struct TEMPERATURE_MOV;
+MovingFloatFilter_Struct FILTER_MOV;
 
-MovingFloatFilter_Struct TEMPERATURE_MFF;
+MovingFloatFilter_Struct FILTER_MFF;
 
 //y = MovingFloatFilter(&TEMPERATURE_MFF, TEMPERATURE)
 /**
