@@ -29,16 +29,18 @@
 
 int main(void)
 {
-	init_INTERRUPT();
+	 __disable_irq();
+
 	init_RCC();
+	init_INTERRUPT();
 	init_GPIO();
 	init_DMA();
 	init_ADC();
 	init_TIMER8();
 	init_DAC();
-	init_RCC();
 
-
+	// Глобальное включение прерываний.
+	 __enable_irq();
 
 
     /* Loop forever */

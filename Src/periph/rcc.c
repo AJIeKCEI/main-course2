@@ -1,7 +1,4 @@
 
-
-
-
 #include "stm32f7xx.h"
 #include "rcc.h"
 
