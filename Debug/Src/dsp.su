@@ -1,3 +1,4 @@
-../Src/dsp.c:19:7:MovingFloatFilter	16	static
-../Src/dsp.c:39:5:cmp	16	static
-../Src/dsp.c:44:7:MedianFloatFilter	24	static,ignoring_inline_asm
+../Src/dsp.c:25:7:MovingFloatFilter	16	static
+../Src/dsp.c:45:5:cmp	16	static
+../Src/dsp.c:50:7:MedianFloatFilter	24	static,ignoring_inline_asm
+../Src/dsp.c:86:7:Low_Filter_1st_Order	24	static

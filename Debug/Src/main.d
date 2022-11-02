@@ -1,29 +1,33 @@
 Src/main.o: ../Src/main.c \
- D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h \
- D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f746xx.h \
- D:/Moisei/Drivers/CMSIS/Core/Include/core_cm7.h \
- D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_version.h \
- D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_compiler.h \
- D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_gcc.h \
- D:/Moisei/Drivers/CMSIS/Core/Include/mpu_armv7.h \
- D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/system_stm32f7xx.h \
- D:/Moisei/Inc/periph/rcc.h D:/Moisei/Inc/periph/gpio.h \
- D:/Moisei/Inc/periph/timer.h D:/Moisei/Inc/periph/interrupt.h \
- D:/Moisei/Inc/periph/adc.h D:/Moisei/Inc/periph/dma.h \
- D:/Moisei/Inc/periph/dac.h ../Inc/control.h
-D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h:
-D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f746xx.h:
-D:/Moisei/Drivers/CMSIS/Core/Include/core_cm7.h:
-D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_version.h:
-D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_compiler.h:
-D:/Moisei/Drivers/CMSIS/Core/Include/cmsis_gcc.h:
-D:/Moisei/Drivers/CMSIS/Core/Include/mpu_armv7.h:
-D:/Moisei/Drivers/CMSIS/Device/ST/STM32F7xx/Include/system_stm32f7xx.h:
-D:/Moisei/Inc/periph/rcc.h:
-D:/Moisei/Inc/periph/gpio.h:
-D:/Moisei/Inc/periph/timer.h:
-D:/Moisei/Inc/periph/interrupt.h:
-D:/Moisei/Inc/periph/adc.h:
-D:/Moisei/Inc/periph/dma.h:
-D:/Moisei/Inc/periph/dac.h:
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f746xx.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/core_cm7.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_version.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_compiler.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_gcc.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/mpu_armv7.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/system_stm32f7xx.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/rcc.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/gpio.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/timer.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/interrupt.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/adc.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/dma.h \
+ C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/dac.h \
+ ../Inc/control.h
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f7xx.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/stm32f746xx.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/core_cm7.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_version.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_compiler.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/cmsis_gcc.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Core/Include/mpu_armv7.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Drivers/CMSIS/Device/ST/STM32F7xx/Include/system_stm32f7xx.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/rcc.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/gpio.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/timer.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/interrupt.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/adc.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/dma.h:
+C:/Users/amoiseenko.YAM/STM32CubeIDE/workspace_1.9.0/main\ course2/Inc/periph/dac.h:
 ../Inc/control.h:

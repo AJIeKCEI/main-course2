@@ -75,8 +75,8 @@ all: main-build
 main-build: main\ course2.elf secondary-outputs
 
 # Tool invocations
-main\ course2.elf main\ course2.map: $(OBJS) $(USER_OBJS) D:\Moisei\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "main course2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\Moisei\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="main course2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+main\ course2.elf main\ course2.map: $(OBJS) $(USER_OBJS) C:\Users\amoiseenko.YAM\STM32CubeIDE\workspace_1.9.0\main\ course2\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "main course2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\amoiseenko.YAM\STM32CubeIDE\workspace_1.9.0\main course2\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="main course2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

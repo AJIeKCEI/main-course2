@@ -6,6 +6,12 @@ MovingFloatFilter_Struct FILTER_MOV;
 
 MovingFloatFilter_Struct FILTER_MFF;
 
+Low_Filter_1st_Order_Struct FILTER_1ORD =
+{
+		.b0= TS /(TAU_1ORD + TS),
+		.a1 = -TAU_1ORD / (TAU_1ORD+TS)
+};
+
 //y = MovingFloatFilter(&TEMPERATURE_MFF, TEMPERATURE)
 /**
  * \brief	Функция фильтра скользящего среднего.
@@ -62,7 +68,7 @@ float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x)
 	__ISB();
 	__DSB();
 	//сортируем массив
-	qsort(filter->buf_sorted, MAX_MEDIAN_FLOAT_SIZE, sizeof(filter->buf_sorted[0]),(int (*)(const void*, const *))cmp);
+	qsort(filter->buf_sorted, MAX_MEDIAN_FLOAT_SIZE, sizeof(filter->buf_sorted[0]),(int (*)(const void*, const void *))cmp);
 
 	//return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE/2];
 	return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE>>1];
@@ -70,4 +76,18 @@ float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x)
 
 
 
+}
+
+/**
+ *\brief функция фильтра нижних частот 1го порядка.
+ *\
+ *
+ */
+float Low_Filter_1st_Order(Low_Filter_1st_Order_Struct*filter, float x)
+{
+	float y = x*filter->b0-filter->yn*filter->a1;
+	// сохраняем выходную переменную для следущего такта расчета.
+	filter->yn = y;
+
+	return y;
 }

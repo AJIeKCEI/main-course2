@@ -9,15 +9,22 @@ Measure_Struct Boost_Measure = {
 
 		.shift = {
 				.inj = 0, // устанавливается при нажатии SW1
-				.u2 = 2.6106, .iL = 0, .temperature = 25.f - V25 / AV_SLOPE,
-				.u1 = 0, .in = 0 }, .scale = { .inj = 3.3 / 4095., .u2 =
-				-4.4559e-04, .iL = 1.9794e-03, .temperature = 3.3
-				/ (4095. * AV_SLOPE), .u1 = 0.024982, .in = 9.8970e-04
+				.u2 = 2.6106,
+				.iL = 0,
+				.temperature = 25.f - V25 / AV_SLOPE,
+				.u1 = 0, .in = 0 },
+				.scale = { .inj = 3.3 / 4095.,
+				.u2 = -4.4559e-04,
+				.iL = 1.9794e-03,
+				.temperature = 3.3/ (4095. * AV_SLOPE),
+				.u1 = 0.024982,
+				.in = 9.8970e-04
 
 		},
 
-		.dac[0] = { .shift = 4095 / 2, .scale = 4095. / 3.3 }, .dac[1] = {
-				.shift = 4095 / 2, .scale = 4095. / 3.3 }, };
+		.dac[0] = { .shift = 4095 / 2, .scale = 4095. / 3.3 },
+		.dac[1] = {	.shift = 4095 / 2, .scale = 4095. / 3.3 },
+};
 
 Protect_Struct Boost_Protect;
 
@@ -36,8 +43,9 @@ void DMA2_Stream0_IRQHandler(void) {
 	unsigned int dac1, dac2;
 	// вывод температуры
 	Boost_Measure.dac[0].data = Boost_Measure.data.inj;
-	Boost_Measure.dac[1].data = MovingFloatFilter(&FILTER_MOV,
-			Boost_Measure.data.inj);
+	//Boost_Measure.dac[1].data = MovingFloatFilter(&FILTER_MOV, Boost_Measure.data.inj);
+	Boost_Measure.dac[1].data = Low_Filter_1st_Order(&FILTER_1ORD,Boost_Measure.data.inj);
+
 
 	dac1 = Boost_Measure.dac[0].scale * Boost_Measure.dac[0].data
 			+ Boost_Measure.dac[0].shift;
