@@ -13,9 +13,21 @@ void init_GPIO(void)
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;
+// led
+    init_GPIO_Output(GPIOD, 1); //HL1.
+    init_GPIO_Output(GPIOD, 2); //HL1.
+    init_GPIO_Output(GPIOD, 3); //HL1.
+    init_GPIO_Output(GPIOD, 4); //HL1.
+    init_GPIO_Output(GPIOD, 5); //HL5.
 
-    init_GPIO_Output(GPIOD, 1);
-    init_GPIO_Output(GPIOD, 6);
+ // Тестовые выводы
+    init_GPIO_Output(GPIOD, 6); //5
+    init_GPIO_Output(GPIOD, 7); //6
+    init_GPIO_Output(GPIOG, 9);  //7
+    init_GPIO_Output(GPIOG, 10);  //8
+    init_GPIO_Output(GPIOG, 11);  //9
+
+    //
     init_GPIO_AFunction(GPIOC, 6, 3);
 
     init_GPIO_Analog(GPIOA, 0);     // Выходное напряжение.

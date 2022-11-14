@@ -51,5 +51,12 @@ int main(void)
 
         if (!(GPIOB->IDR&(1<<1)))
         	Boost_Measure.count = SET_SHIFTS_MAX_COUNT;
+
+        if (!(GPIOB->IDR&(1<<2)))
+        {
+        	timer_PWM_on();
+        	GPIOD->ODR &= ~((1<<2)|(1<<3)|(1<<4)|(1<<5));
+        }
+
     }
 }

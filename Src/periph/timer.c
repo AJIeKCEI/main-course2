@@ -22,8 +22,8 @@ void init_TIMER8(void)
     // Вкл. канал сравнения.
     TIM8->CCER |= TIM_CCER_CC1E;
 
-    // Режим ШИМ 1.
-    TIM8->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
+    // Включение  ШИМ 1.
+    timer_PWM_on();
 
     // Вкл. буферизацию.
     TIM8->CCMR1 |= TIM_CCMR1_OC1PE;
@@ -39,4 +39,26 @@ void init_TIMER8(void)
 
     // Вкл. счёт таймера.
     TIM8->CR1 |= TIM_CR1_CEN;
+}
+
+
+/**
+ * \brief Функция включения ШИМ таймера 8.
+ *
+ */
+void timer_PWM_on(void)
+{
+	// Режим ШИМ 1.
+	    TIM8->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
+}
+
+
+/**
+ * \brief Функция выключения ШИМ таймера 8.
+ *
+ */
+void timer_PWM_off(void)
+{
+	// Режим принудительного логического 0.
+		    TIM8->CCMR1 &= ~TIM_CCMR1_OC1M_1;
 }

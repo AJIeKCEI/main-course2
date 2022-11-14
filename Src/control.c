@@ -9,12 +9,12 @@ Measure_Struct Boost_Measure = {
 
 		.shift = {
 				.inj = 0, // устанавливается при нажатии SW1
-				.u2 = 2.6106,
+				.u2 = 100.4,
 				.iL = 0,
 				.temperature = 25.f - V25 / AV_SLOPE,
 				.u1 = 0, .in = 0 },
 				.scale = { .inj = 3.3 / 4095.,
-				.u2 = -4.4559e-04,
+				.u2 = -0.001880341880341881,
 				.iL = 1.9794e-03,
 				.temperature = 3.3/ (4095. * AV_SLOPE),
 				.u1 = 0.024982,
@@ -22,14 +22,24 @@ Measure_Struct Boost_Measure = {
 
 		},
 
+
+
 		.dac[0] = { .shift = 4095 / 2, .scale = 4095. / 3.3 },
 		.dac[1] = {	.shift = 4095 / 2, .scale = 4095. / 3.3 },
 };
 
-Protect_Struct Boost_Protect;
+Protect_Struct Boost_Protect =
+{
+		.iL_max = 6.,
+		.in_max = 3.,
+		.u1_max = 90.,
+		.u2_max = 100.
+
+};
 
 void shift_and_scale(void);
 void set_shifts(void);
+void protect_software(void);
 
 void DMA2_Stream0_IRQHandler(void) {
 	// Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
@@ -39,6 +49,7 @@ void DMA2_Stream0_IRQHandler(void) {
 	__ISB();
 
 	shift_and_scale();
+	protect_software();
 	set_shifts();
 	unsigned int dac1, dac2;
 	// вывод температуры
@@ -95,4 +106,31 @@ void set_shifts(void) {
 	if (--Boost_Measure.count == 0)
 		Boost_Measure.shift.inj = -Boost_Measure.sum.inj;
 
+}
+
+/**
+ * \brief Функция программных защит
+ */
+void protect_software(void)
+{
+	if(Boost_Measure.data.iL > Boost_Protect.iL_max)
+	{
+		timer_PWM_off();
+		GPIOD->ODR|= 1<<2;
+	}
+	if(Boost_Measure.data.in > Boost_Protect.in_max)
+		{
+			timer_PWM_off();
+			GPIOD->ODR|= 1<<3;
+		}
+	if(Boost_Measure.data.u1 > Boost_Protect.u1_max)
+			{
+				timer_PWM_off();
+				GPIOD->ODR|= 1<<4;
+			}
+	if(Boost_Measure.data.u2 > Boost_Protect.u2_max)
+			{
+				timer_PWM_off();
+				GPIOD->ODR|= 1<<5;
+			}
 }
