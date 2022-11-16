@@ -1,6 +1,7 @@
 #include "stm32f7xx.h"
 #include "control.h"
 #include "dsp.h"
+#include "timer.h"
 
 Control_Struct Boost_Control;
 Measure_Struct Boost_Measure = {
@@ -33,13 +34,18 @@ Protect_Struct Boost_Protect =
 		.iL_max = 6.,
 		.in_max = 3.,
 		.u1_max = 90.,
-		.u2_max = 100.
+		.u2_max = 100.,
+
+
+		.iL_n =2.,
+		.iL_int_max = 1. *5.
 
 };
 
 void shift_and_scale(void);
 void set_shifts(void);
 void protect_software(void);
+void integral_protect(void);
 
 void DMA2_Stream0_IRQHandler(void) {
 	// Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
@@ -119,18 +125,45 @@ void protect_software(void)
 		GPIOD->ODR|= 1<<2;
 	}
 	if(Boost_Measure.data.in > Boost_Protect.in_max)
-		{
-			timer_PWM_off();
-			GPIOD->ODR|= 1<<3;
-		}
+	{
+		timer_PWM_off();
+		GPIOD->ODR|= 1<<3;
+	}
 	if(Boost_Measure.data.u1 > Boost_Protect.u1_max)
-			{
-				timer_PWM_off();
-				GPIOD->ODR|= 1<<4;
-			}
+	{
+		timer_PWM_off();
+		GPIOD->ODR|= 1<<4;
+	}
 	if(Boost_Measure.data.u2 > Boost_Protect.u2_max)
-			{
-				timer_PWM_off();
-				GPIOD->ODR|= 1<<5;
-			}
+	{
+		timer_PWM_off();
+		GPIOD->ODR|= 1<<5;
+	}
+	//
+integral_protect();
+}
+
+/**
+ *\brief Функция интегрально-токовой защиты по ток реактора(входному току)
+ *
+ */
+void integral_protect(void)
+{
+	//Разница между токами реактора и номинальным значением
+	float x = Boost_Measure.data.iL - Boost_Protect.iL_n;
+
+	Boost_Protect.iL_int_sum = Boost_Protect.iL_int_sum +x*TS;
+
+	//Обнулим интегратор сумму в нормальном режиме работы.
+	if (Boost_Protect.iL_int_sum<0)
+		Boost_Protect.iL_int_sum =0;
+
+	//Условия срабатывания защиты
+	if(Boost_Protect.iL_int_sum> Boost_Protect.iL_int_max)
+	{
+		Boost_Protect.iL_int_sum = 0;
+		timer_PWM_off();
+		GPIOD->ODR|= 1<<1;
+
+	}
 }

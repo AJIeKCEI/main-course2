@@ -46,8 +46,8 @@ int main(void)
     /* Loop forever */
     for(;;)
     {
-        for(int i = 0; i < 100000; i++);
-        GPIOD->ODR ^= 1 << 1;
+       // for(int i = 0; i < 100000; i++);
+       // GPIOD->ODR ^= 1 << 1;
 
         if (!(GPIOB->IDR&(1<<1)))
         	Boost_Measure.count = SET_SHIFTS_MAX_COUNT;
@@ -55,7 +55,7 @@ int main(void)
         if (!(GPIOB->IDR&(1<<2)))
         {
         	timer_PWM_on();
-        	GPIOD->ODR &= ~((1<<2)|(1<<3)|(1<<4)|(1<<5));
+        	GPIOD->ODR &= ~((1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<5));
         }
 
     }

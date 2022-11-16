@@ -3,9 +3,10 @@
 
 #define MAX_MOVING_FLOAT_SIZE (500)
 #define MAX_MEDIAN_FLOAT_SIZE (500)
-#define TS (1./100.e3) //период комутации (дискретизации)
-#define TAU_1ORD (0.001/2./3.1415) //Постоянная врмени фильтра 1-ого порядка [c].
-
+#define FS (100.e3) //частота комутации (дискретизации)[Гц].
+#define TS (1./(FS))//период комутации (дискретизации)[c].
+#define TAU_1ORD (1./WC_1ORD) //Постоянная врмени фильтра 1-ого порядка [c].
+#define WC_1ORD (2*3.1415*1000.)
 
 void init_DSP(void);
 
