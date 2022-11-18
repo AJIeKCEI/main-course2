@@ -47,6 +47,7 @@ void set_shifts(void);
 void protect_software(void);
 void integral_protect(void);
 
+
 void DMA2_Stream0_IRQHandler(void) {
 	// Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
 	DMA2->LIFCR |= DMA_LIFCR_CTCIF0;
@@ -57,6 +58,9 @@ void DMA2_Stream0_IRQHandler(void) {
 	shift_and_scale();
 	protect_software();
 	set_shifts();
+	//Регистр сравнения кок произведения максимального значения на коэффициент заполнения
+	TIM8->CCR1 = TIM8->ARR*Boost_Control.duty;
+
 	unsigned int dac1, dac2;
 	// вывод температуры
 	Boost_Measure.dac[0].data = Boost_Measure.data.inj;
@@ -166,4 +170,18 @@ void integral_protect(void)
 		GPIOD->ODR|= 1<<1;
 
 	}
+}
+
+
+void EXTI_IRQHandler(void)
+{
+	EXTI->PR|=EXTI_PR_PR1;//Сброс флага прерывания EXTI1
+
+	__ISB();
+	//если на пб лог ноль
+	if(!(GPIOB->IDR&(1<<1)))
+		timer_PWM_off();
+	else
+		timer_PWM_on();
+
 }
