@@ -19,6 +19,11 @@ void init_INTERRUPT(void) {
 
 	// Включаем прерываний DMA2_Stream0_IRQn в NVIC.
 	NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+	// Установка приоритет прерывания DMA2_Stream0_IRQn: группа 2, подприоритет 1.
+	NVIC_SetPriority(EXTI1_IRQn,	NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 1));
+
+	// Включаем прерываний DMA2_Stream0_IRQn в NVIC.
+	NVIC_EnableIRQ(EXTI1_IRQn);
 }
 
 void TIM8_UP_TIM13_IRQHandler(void) {
