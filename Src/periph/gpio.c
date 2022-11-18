@@ -38,11 +38,6 @@ void init_GPIO(void)
 
     init_GPIO_Analog(GPIOA, 4);     // ЦАП1.
     init_GPIO_Analog(GPIOA, 5);     // ЦАП2.
-
-    SYSCFG->EXTICR[0]|=1<<4; // настраиваем pb1
-    EXTI->IMR|=EXTI_IMR_IM1;
-    EXTI->FTSR|=EXTI_FTSR_TR1; //настройка по линии 1 по спадающему фронту
-    EXTI->RTSR|=EXTI_RTSR_TR1; //настройка по линии 1 по спадающему фронту
 }
 
 void init_GPIO_Output(GPIO_TypeDef * gpio, unsigned int pin)
