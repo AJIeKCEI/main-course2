@@ -223,7 +223,7 @@ float DirectFormI_FloatFilter(DigitalFilter_Struct * filter, float x)
  * \return      y: сумму интегратора (выход).
  *
  */
-float BackwardEuler_Integrator(BackwardEuler_Integrator_Struct * integrator, float x)
+float BackwardEuler_Integrator(Integrator_Struct * integrator, float x)
 {
     // Накапливаем сумму.
     integrator->sum = LIMIT(integrator->sum + integrator->k * x, integrator->sat.min, integrator->sat.max);
@@ -231,6 +231,64 @@ float BackwardEuler_Integrator(BackwardEuler_Integrator_Struct * integrator, flo
     // Возвращаем значение суммы.
     return integrator->sum;
 }
+/**
+ * \brief       Функция интегратора методами трапеций (Trapezoidal).
+ *
+ * \param       integrator: структура с параметрами интегратора.
+ * \param       x: вход интегратора.
+ *
+ * \return      y: сумму интегратора (выход).
+ *
+ */
+float Trapezoidal_Integrator(Integrator_Struct * integrator, float x)
+{
+    // y[n]=s[n-1]+x[n]*k.
+    float out = LIMIT(integrator->sum+x*integrator->k, integrator->sat.min, integrator->sat.max);
+	//s[n]=y[n]+x[n]*k.
+    integrator->sum = out+ x*integrator->k ;
+
+    // Возвращаем значение суммы.
+    return out;
+}
+
+
+float BackwardEuler_Diff(Diff_Struct*diff, float x)
+{
+	//y[n] = ()
+	float out = (x - diff->xz)*diff->k;
+
+	// Сохраняем текущее значение х для следующего расчета
+	diff->xz=x;
+
+	return out;
+
+}
+
+/**
+ * \brief       Функция ПИД регулятора.
+ *
+ * \param       pid: структура с параметрами регулятора.
+ * \param       x: вход задатчика.
+ *
+ * \return      y: выход задатчика.
+ *
+ */
+float PID_Controller(PID_Controller_Struct * pid, float x)
+{
+    // расчет пропорциональной части
+    float out_p = x*pid->kp;
+
+    // расчет пропорциональной части
+    float out_i = Trapezoidal_Integrator(&pid->integrator, x);
+
+    // расчет пропорциональной части
+    float out_d = BackwardEuler_Diff(&pid->diff, x);
+
+
+    return LIMIT(out_p+out_i+out_d, pid->sat.min, pid->sat.max);
+
+    }
+
 
 /**
  * \brief       Функция линейного задатчика.

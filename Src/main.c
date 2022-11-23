@@ -60,6 +60,9 @@ int main(void)
         // Проверяем PB2 (SW2) на ноль.
         if (!(GPIOB->IDR & (1 << 2)))
         {
+        	extern float REF_CONTROLLER;
+        	REF_CONTROLLER = 1.f;
+
             timer_PWM_On();
             GPIOD->ODR &= ~((1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5));
         }

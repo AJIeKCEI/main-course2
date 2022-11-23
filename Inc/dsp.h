@@ -69,21 +69,49 @@ typedef struct
 
     } sat;  // Структура с параметрами ограничителя суммы.
 
-} BackwardEuler_Integrator_Struct;  // Структура параметров интегратора, метод прямоугольников.
+} Integrator_Struct;  // Структура параметров интегратора.
 
 typedef struct
 {
-    BackwardEuler_Integrator_Struct integrator;
+    Integrator_Struct integrator;
 
 } LinearRamp_Struct;    // Структура параметров линейного задатчика.
 
 typedef struct
 {
-    BackwardEuler_Integrator_Struct integrator[2];
+    Integrator_Struct integrator[2];
 
     float k3;           // Коэффициент дополнительной нелинейной связи.
 
 } SShapedRamp_Struct;   // Структура параметров S-образного задатчика.
+
+typedef struct
+{
+	 float k;// коэффициент дифференцатора
+	 float xz;// переменная для хранения предыдущего значения входа
+
+} Diff_Struct;    // Структура параметров дифференциатора.
+
+typedef struct
+{
+	 float kp;// коэффициент пропорциональной части
+
+	 Integrator_Struct integrator;
+
+	 Diff_Struct diff;//Дифференциальная часть
+	    struct
+	    {
+	        float min;  // Мин. значение суммы.
+	        float max;  // Макс. значение суммы.
+
+	    } sat;  // Структура с параметрами ограничителя выхода.
+
+
+} PID_Controller_Struct;    // Структура параметров PID.
+
+
+
+
 
 float MovingFloatFilter(MovingFloatFilter_Struct * filter, float x);
 float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x);
@@ -91,7 +119,11 @@ float Low_Filter_1st_Order(Low_Filter_1st_Order_Struct * filter, float x);
 float DirectFormII_FloatFilter(DigitalFilter_Struct * filter, float x);
 float DirectFormI_FloatFilter(DigitalFilter_Struct * filter, float x);
 
-float BackwardEuler_Integrator(BackwardEuler_Integrator_Struct * integrator, float x);
+float BackwardEuler_Integrator(Integrator_Struct * integrator, float x);
+float Trapezoidal_Integrator(Integrator_Struct * integrator, float x);
+float BackwardEuler_Diff(Diff_Struct*diff, float x);
+float PID_Controller(PID_Controller_Struct * pid, float x);
+
 float Linear_Ramp(LinearRamp_Struct * ramp, float x);
 float SShaped_Ramp(SShapedRamp_Struct * ramp, float x);
 

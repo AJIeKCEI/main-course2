@@ -30,8 +30,8 @@ Measure_Struct Boost_Measure =
         .in = 9.8970e-04
     },
 
-    .dac[0] = { .shift = 0, .scale = 4095. },
-    .dac[1] = { .shift = 0, .scale = 4095. },
+    .dac[0] = { .shift = 0, .scale = 4095.*3./3.3 },
+    .dac[1] = { .shift = 0, .scale = 4095.*3./3.3 },
 };
 Protect_Struct Boost_Protect =
 {
@@ -79,6 +79,19 @@ SShapedRamp_Struct SSHAPED_RAMP =
     .k3 = 0.125
 };
 
+PID_Controller_Struct PID_CONTROLLER =
+{
+		.kp=0.5,
+		.integrator =
+		{
+			.k = 0.5/0.05 *(TS/2.),
+			.sat = { .min = 0., .max = 1. }
+		},
+		.sat = { .min = 0., .max = 1. }
+};
+
+float REF_CONTROLLER = 0;
+
 void shift_and_scale(void);
 void set_shifts(void);
 void protect_software(void);
@@ -110,10 +123,10 @@ void DMA2_Stream0_IRQHandler(void)
     TIM8->CCR1 = TIM8->ARR * LIMIT(Boost_Control.duty, Boost_Protect.sat.duty_min, Boost_Protect.sat.duty_max);
 
     // Выводим переменную на ЦАП1.
-    Boost_Measure.dac[0].data = Linear_Ramp(&LINEAR_RAMP, 1.f);
+    Boost_Measure.dac[0].data = PID_Controller(&PID_CONTROLLER, REF_CONTROLLER);
 
     // Выводим переменную на ЦАП2.
-    Boost_Measure.dac[1].data = SShaped_Ramp(&SSHAPED_RAMP, 1.f);
+    Boost_Measure.dac[1].data = 0;
 
     // Пересчитываем внутренние переменные в значения регистров ЦАП1 и ЦАП2.
     unsigned int dac1 = Boost_Measure.dac[0].scale * Boost_Measure.dac[0].data + Boost_Measure.dac[0].shift;

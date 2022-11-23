@@ -5,5 +5,8 @@
 ../Src/dsp.c:144:7:DirectFormII_FloatFilter	24	static
 ../Src/dsp.c:181:7:DirectFormI_FloatFilter	24	static
 ../Src/dsp.c:226:7:BackwardEuler_Integrator	16	static
-../Src/dsp.c:244:7:Linear_Ramp	24	static
-../Src/dsp.c:268:7:SShaped_Ramp	32	static
+../Src/dsp.c:243:7:Trapezoidal_Integrator	24	static
+../Src/dsp.c:255:7:BackwardEuler_Diff	24	static
+../Src/dsp.c:276:7:PID_Controller	32	static
+../Src/dsp.c:302:7:Linear_Ramp	24	static
+../Src/dsp.c:326:7:SShaped_Ramp	32	static
