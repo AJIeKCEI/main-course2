@@ -1,4 +1,9 @@
-../Src/dsp.c:25:7:MovingFloatFilter	16	static
-../Src/dsp.c:45:5:cmp	16	static
-../Src/dsp.c:50:7:MedianFloatFilter	24	static,ignoring_inline_asm
-../Src/dsp.c:86:7:Low_Filter_1st_Order	24	static
+../Src/dsp.c:50:7:MovingFloatFilter	16	static
+../Src/dsp.c:66:5:cmp	24	static
+../Src/dsp.c:89:7:MedianFloatFilter	24	static,ignoring_inline_asm
+../Src/dsp.c:124:7:Low_Filter_1st_Order	24	static
+../Src/dsp.c:144:7:DirectFormII_FloatFilter	24	static
+../Src/dsp.c:181:7:DirectFormI_FloatFilter	24	static
+../Src/dsp.c:226:7:BackwardEuler_Integrator	16	static
+../Src/dsp.c:244:7:Linear_Ramp	24	static
+../Src/dsp.c:268:7:SShaped_Ramp	32	static

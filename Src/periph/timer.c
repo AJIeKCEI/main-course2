@@ -13,17 +13,14 @@ void init_TIMER8(void)
     TIM8->PSC = 0;
     TIM8->ARR = 216000000/100000/2;
 
-    // Регистр сравнения: 540 (50% заполнение).
-    TIM8->CCR1 = TIM8->ARR / 2;
-
     // Симметричный счёт (режим 2).
     TIM8->CR1 |= TIM_CR1_CMS_1;
 
     // Вкл. канал сравнения.
     TIM8->CCER |= TIM_CCER_CC1E;
 
-    // Включение  ШИМ 1.
-    timer_PWM_on();
+    // Вкл. ШИМ.
+    timer_PWM_On();
 
     // Вкл. буферизацию.
     TIM8->CCMR1 |= TIM_CCMR1_OC1PE;
@@ -41,24 +38,32 @@ void init_TIMER8(void)
     TIM8->CR1 |= TIM_CR1_CEN;
 }
 
-
 /**
- * \brief Функция включения ШИМ таймера 8.
+ * \brief       Функция включения ШИМ таймера 8.
  *
  */
-void timer_PWM_on(void)
+void timer_PWM_On(void)
 {
-	// Режим ШИМ 1.
-	    TIM8->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
+    // Режим ШИМ 1.
+    TIM8->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
+}
+
+/**
+ * \brief       Функция выключения ШИМ таймера 8.
+ *
+ */
+void timer_PWM_Off(void)
+{
+    // Режим принудительного логического 0.
+    TIM8->CCMR1 &= ~TIM_CCMR1_OC1M_1;
 }
 
 
-/**
- * \brief Функция выключения ШИМ таймера 8.
- *
- */
-void timer_PWM_off(void)
-{
-	// Режим принудительного логического 0.
-		    TIM8->CCMR1 &= ~TIM_CCMR1_OC1M_1;
-}
+
+
+
+
+
+
+
+

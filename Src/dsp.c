@@ -1,93 +1,308 @@
+
 #include "stm32f7xx.h"
 #include "dsp.h"
+
+#include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 MovingFloatFilter_Struct FILTER_MOV;
-
-MovingFloatFilter_Struct FILTER_MFF;
-
+MedianFloatFilter_Struct FILTER_MED;
 Low_Filter_1st_Order_Struct FILTER_1ORD =
 {
-		.b0= TS /(TAU_1ORD + TS),
-		.a1 = -TAU_1ORD / (TAU_1ORD+TS)
+    .b0 = TS / (TAU_1ORD + TS),
+    .a1 = -TAU_1ORD / (TAU_1ORD + TS)
 };
 
-//y = MovingFloatFilter(&TEMPERATURE_MFF, TEMPERATURE)
-/**
- * \brief	Функция фильтра скользящего среднего.
- *
- * \param	fiter:  структура с параметром фильтра
- * \param	x: входная переменная.
- *
- *\return y: среднее значение
- */
+// Фильтр нижних частот.
+DigitalFilter_Struct FILTER_DIG1 =
+{
+    .b[0] = 0.013359200027857,
+    .b[1] = 0.026718400055713,
+    .b[2] = 0.013359200027857,
 
+    .a[0] = 1,
+    .a[1] = -1.647459981076977,
+    .a[2] = 0.700896781188403
+};
+
+// Фильтр режекторный.
+DigitalFilter_Struct FILTER_DIG2 =
+{
+    .b[0] = 0.993755964953657,
+    .b[1] = -1.925108587845861,
+    .b[2] = 0.993755964953657,
+
+    .a[0] = 1,
+    .a[1] = -1.925108587845860,
+    .a[2] = 0.987511929907314
+};
+
+/**
+ * \brief       Функция фильтра скользящего среднего.
+ *
+ * \param       filter: структура с параметрами фильтра.
+ * \param       x: входная переменная.
+ *
+ * \return      y: среднее значение.
+ *
+ */
 float MovingFloatFilter(MovingFloatFilter_Struct * filter, float x)
 {
-	//отнимаем от суммы н-1 точку и прибавляем х0ъ точку.
-	filter->sum = filter->sum - filter->buf[filter->pointer]+x;
-	//добавляем новую точку в массив точек.
-	filter->buf[filter->pointer]=x;
+    // Отнимаем от суммы [n-1] точку и прибавляем [0] точку.
+    filter->sum = filter->sum - filter->buf[filter->pointer] + x;
 
-	//инкриментируем указатель счетчика
-	if(++filter->pointer>= MAX_MOVING_FLOAT_SIZE)
-		filter->pointer=0;
+    // Добавляем новую точку в массив точек.
+    filter->buf[filter->pointer] = x;
 
-	//Вычисляем среднее значение
-	return filter->sum*(1.f/MAX_MOVING_FLOAT_SIZE);
+    // Инкрементируем указатель (счётчик).
+    if (++filter->pointer >= MAX_MOVING_FLOAT_SIZE)
+        filter->pointer = 0;
 
-
-
-
-
+    // Вычисляем среднее значение.
+    return filter->sum * (1.f / MAX_MOVING_FLOAT_SIZE);
 }
 
-int cmp(const float *a, const float *b){
-	return *a -*b;
-
-}
-
-float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x)
+int cmp(const void *a, const void *b)
 {
-	//отнимаем от суммы н-1 точку и прибавляем х0ъ точку.
-	//filter->sum = filter->sum - filter->buf[filter->pointer]+x;
-	//добавляем новую точку в массив точек.
-	filter->buf[filter->pointer]=x;
+    float *af = (float *)a;
+    float *bf = (float *)b;
 
-	//инкриментируем указатель счетчика
-	if(++filter->pointer>= MAX_MEDIAN_FLOAT_SIZE)
-		filter->pointer=0;
+    if (*af > *bf)
+        return 1;
 
-	//Вычисляем среднее значение
+    if (*af < *bf)
+        return -1;
 
-
-	for(int i=0; i<MAX_MEDIAN_FLOAT_SIZE; i++)
-		filter->buf_sorted[i]=filter->buf[i];
-   //memcpy(filter->buf_sorted,filter->buf, sixeof(filter->buf));
-	// Ждем окончания копирования (выхода всех инструкций и данных из конвейера).
-	__ISB();
-	__DSB();
-	//сортируем массив
-	qsort(filter->buf_sorted, MAX_MEDIAN_FLOAT_SIZE, sizeof(filter->buf_sorted[0]),(int (*)(const void*, const void *))cmp);
-
-	//return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE/2];
-	return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE>>1];
-
-
-
-
+    return 0;
 }
 
 /**
- *\brief функция фильтра нижних частот 1го порядка.
- *\
+ * \brief       Функция медианного фильтра.
+ *
+ * \param       filter: структура с параметрами фильтра.
+ * \param       x: входная переменная.
+ *
+ * \return      y: среднее значение.
  *
  */
-float Low_Filter_1st_Order(Low_Filter_1st_Order_Struct*filter, float x)
+float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x)
 {
-	float y = x*filter->b0-filter->yn*filter->a1;
-	// сохраняем выходную переменную для следущего такта расчета.
-	filter->yn = y;
+    // Добавляем новую точку в массив точек.
+    filter->buf[filter->pointer] = x;
 
-	return y;
+    // Инкрементируем указатель (счётчик).
+    if (++filter->pointer >= MAX_MEDIAN_FLOAT_SIZE)
+        filter->pointer = 0;
+
+    // Делаем копию массива точек.
+    for(int i = 0; i < MAX_MEDIAN_FLOAT_SIZE; i++)
+        filter->buf_sorted[i] = filter->buf[i];
+
+    //memcpy(filter->buf_sorted, filter->buf, sizeof(filter->buf));
+
+    // Ждём окончания копирования (выхода всех инструкций и данных из конвейера).
+    __ISB();
+    __DSB();
+
+    // Сортируем массив.
+    qsort(filter->buf_sorted, MAX_MEDIAN_FLOAT_SIZE, sizeof(filter->buf_sorted[0]), (int (*)(const void *, const void *))cmp);
+
+    return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE >> 1];
+    //return filter->buf_sorted[MAX_MEDIAN_FLOAT_SIZE / 2];
 }
+
+/**
+ * \brief   Функция фильтра нижних частот 1го порядка.
+ *
+ * \param       filter: структура с параметрами фильтра.
+ * \param       x: входная переменная.
+ *
+ * \return      y: значение после фильтрации.
+ *
+ */
+float Low_Filter_1st_Order(Low_Filter_1st_Order_Struct * filter, float x)
+{
+    // Рассчитываем выходную переменную для текущего такта.
+    float y = x * filter->b0 - filter->yn * filter->a1;
+
+    // Сохраняем выходную переменную для следующего такта расчёта.
+    filter->yn = y;
+
+    return y;
+}
+
+/**
+ * \brief   Функция цифрового фильтра в прямой форме II.
+ *
+ * \param   filter: структура с параметрами фильтра.
+ * \param   x: входная переменная.
+ *
+ * \return  y: значение после фильтрации.
+ *
+ */
+float DirectFormII_FloatFilter(DigitalFilter_Struct * filter, float x)
+{
+    float y = 0;
+
+    // w = x.
+    filter->z[0][0] = x;
+
+    for (int i = MAX_ORDER_DIGITAL_FILTER; i >= 1; i--)
+    {
+        // Суммирование ветвей с коэффициентами 'a'.
+        // w = w - ai * w * z^(-i).
+        filter->z[0][0] -= filter->z[0][i] * filter->a[i];
+
+        // Суммирование ветвей с коэффициентами 'b'.
+        // y = y + bi * w * z^(-i).
+        y += filter->z[0][i] * filter->b[i];
+
+        // Сохранение предыдущих значений.
+        // z^(-i) <--- z^(-(i-1)).
+        filter->z[0][i] = filter->z[0][i-1];
+    }
+
+    // y += w * b0.
+    y += filter->z[0][0] * filter->b[0];
+
+    return y;
+}
+
+/**
+ * \brief   Функция цифрового фильтра в прямой форме I.
+ *
+ * \param   filter: структура с параметрами фильтра.
+ * \param   x: входная переменная.
+ *
+ * \return  y: значение после фильтрации.
+ *
+ */
+float DirectFormI_FloatFilter(DigitalFilter_Struct * filter, float x)
+{
+    filter->z[0][0] = x;
+    filter->z[1][0] = x * filter->b[0];
+
+    // Вычисление первого каскада (с коэффициентами 'b').
+    for (int i = MAX_ORDER_DIGITAL_FILTER; i >= 1; i--)
+    {
+        // v = v + bi * x * z^(-i).
+        filter->z[1][0] += filter->z[0][i] * filter->b[i];
+
+        // Сохранение предыдущих значений.
+        // z^(-i) <--- z^(-(i-1)).
+        filter->z[0][i] = filter->z[0][i-1];
+    }
+
+    // После вычислений в первом цикле:
+    //  filter->z[1][0] = v.
+
+    // Вычисление второго каскада (с коэффициентами 'a').
+    for (int i = MAX_ORDER_DIGITAL_FILTER; i >= 1; i--)
+    {
+        // y = y - ai * y * z^(-i).
+        filter->z[1][0] -= filter->z[1][i] * filter->a[i];
+
+        // Сохранение предыдущих значений.
+        // z^(-i) <--- z^(-(i-1)).
+        filter->z[1][i] = filter->z[1][i-1];
+    }
+
+    // После вычислений во втором цикле:
+    //  filter->z[1][0] = y.
+
+    return filter->z[1][0];
+}
+
+/**
+ * \brief       Функция интегратора методами прямоугольников (Backward Euler).
+ *
+ * \param       integrator: структура с параметрами интегратора.
+ * \param       x: вход интегратора.
+ *
+ * \return      y: сумму интегратора (выход).
+ *
+ */
+float BackwardEuler_Integrator(BackwardEuler_Integrator_Struct * integrator, float x)
+{
+    // Накапливаем сумму.
+    integrator->sum = LIMIT(integrator->sum + integrator->k * x, integrator->sat.min, integrator->sat.max);
+
+    // Возвращаем значение суммы.
+    return integrator->sum;
+}
+
+/**
+ * \brief       Функция линейного задатчика.
+ *
+ * \param       ramp: структура с параметрами задатчика.
+ * \param       x: вход задатчика.
+ *
+ * \return      y: выход задатчика.
+ *
+ */
+float Linear_Ramp(LinearRamp_Struct * ramp, float x)
+{
+    // s = x - r.
+    float s = x - ramp->integrator.sum;
+
+    // Функция знака (sign).
+    if (signbit(s))     // Если s имеет знак минус (число отрицательное).
+        s = -1.f;
+    else                // Иначе...
+        s = 1.f;
+
+    // Интегрируем выход функции знака.
+    return BackwardEuler_Integrator(&ramp->integrator, s);
+}
+
+/**
+ * \brief       Функция S-образного задатчика.
+ *
+ * \param       ramp: структура с параметрами задатчика.
+ * \param       x: вход задатчика.
+ *
+ * \return      y: выход задатчика.
+ *
+ */
+float SShaped_Ramp(SShapedRamp_Struct * ramp, float x)
+{
+    // s1 = x - (r +- k3 * p^2) = x - r -+ k3 * p^2.
+    float s1 = x - ramp->integrator[1].sum - ramp->k3 * ramp->integrator[0].sum * fabsf(ramp->integrator[0].sum);
+
+    // Функция знака (sign).
+    if (signbit(s1))    // Если s1 имеет знак минус (число отрицательное).
+        s1 = -1.f;
+    else                // Иначе...
+        s1 = 1.f;
+
+    // s2 = s1 - p.
+    float s2 = s1 - ramp->integrator[0].sum;
+
+    // Функция знака (sign).
+    if (signbit(s2))    // Если s2 имеет знак минус (число отрицательное).
+        s2 = -1.f;
+    else                // Иначе...
+        s2 = 1.f;
+
+    float p = BackwardEuler_Integrator(&ramp->integrator[0], s2);
+    return BackwardEuler_Integrator(&ramp->integrator[1], p);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

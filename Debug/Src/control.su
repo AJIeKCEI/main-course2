@@ -1,0 +1,5 @@
+../Src/control.c:87:6:DMA2_Stream0_IRQHandler	16	static,ignoring_inline_asm
+../Src/control.c:130:6:shift_and_scale	4	static
+../Src/control.c:146:6:set_shifts	4	static
+../Src/control.c:167:6:protect_software	8	static
+../Src/control.c:205:6:integral_protect	24	static

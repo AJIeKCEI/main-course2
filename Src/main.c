@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include "stm32f7xx.h"
+
 #include "rcc.h"
 #include "gpio.h"
 #include "timer.h"
@@ -25,38 +26,51 @@
 #include "adc.h"
 #include "dma.h"
 #include "dac.h"
+
 #include "control.h"
+
+volatile float TEMPERATURE;
 
 int main(void)
 {
-	 __disable_irq();
+    // Глобальное отключение прерываний.
+    __disable_irq();
 
-	init_RCC();
-	init_INTERRUPT();
-	init_GPIO();
-	init_DMA();
-	init_ADC();
-	init_TIMER8();
-	init_DAC();
+    init_INTERRUPT();
+    init_RCC();
+    init_GPIO();
+    init_DMA();
+    init_ADC();
+    init_TIMER8();
+    init_DAC();
 
-	// Глобальное включение прерываний.
-	 __enable_irq();
-
+    // Глобальное включение прерываний.
+    __enable_irq();
 
     /* Loop forever */
     for(;;)
     {
-       // for(int i = 0; i < 100000; i++);
-       // GPIOD->ODR ^= 1 << 1;
+        //for(int i = 0; i < 100000; i++);
+        //GPIOD->ODR ^= 1 << 1;
 
-        if (!(GPIOB->IDR&(1<<1)))
-        	Boost_Measure.count = SET_SHIFTS_MAX_COUNT;
+        // Проверяем PB1 (SW1) на ноль.
+        if (!(GPIOB->IDR & (1 << 1)))
+            Boost_Measure.count = SET_SHIFTS_MAX_COUNT;
 
-        if (!(GPIOB->IDR&(1<<2)))
+        // Проверяем PB2 (SW2) на ноль.
+        if (!(GPIOB->IDR & (1 << 2)))
         {
-        	timer_PWM_on();
-        	GPIOD->ODR &= ~((1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<5));
+            timer_PWM_On();
+            GPIOD->ODR &= ~((1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5));
         }
-
     }
 }
+
+
+
+
+
+
+
+
+
