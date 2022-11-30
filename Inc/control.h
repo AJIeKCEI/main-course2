@@ -2,11 +2,19 @@
 #ifndef __CONTROL_H__
 #define __CONTROL_H__
 
+#include "dsp.h"
+
 #define SET_SHIFTS_MAX_COUNT    ((unsigned int)(0.5*100.e3))
+
+//  Уставки тока реактора, [А].
+#define IL_REF_1    (2.f)
+#define IL_REF_2    (3.f)
 
 typedef struct
 {
     float duty;     // Коэфф. заполнения, [о.е.].
+
+    PID_Controller_Struct pid_current;  // Структура регулятора тока реактора.
 
 } Control_Struct;   // Структура с параметрами системы управления.
 

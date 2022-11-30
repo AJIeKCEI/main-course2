@@ -61,6 +61,7 @@ typedef struct
 {
     float k;        // Коэффициент интегратора (включает период дискретизации).
     float sum;      // Сумма интегратора (выход).
+    float c;        // Переменая для накопления погрешности интегрирования в алгоритме Кэхэна.
 
     struct
     {
@@ -70,6 +71,32 @@ typedef struct
     } sat;  // Структура с параметрами ограничителя суммы.
 
 } Integrator_Struct;  // Структура параметров интегратора.
+
+typedef struct
+{
+    float k;        // Коэффициент диффернциатора (включает период дискретизации).
+    float xz;       // Переменная для хранения предыдущего значение входа.
+
+} Diff_Struct;  // Структура параметров дифференциатора.
+
+typedef struct
+{
+    float kp;       // Коэффициент пропорциональной части.
+    float kb;       // Коэффициент обратной связи в алгоритме Back-calculation.
+
+    Integrator_Struct integrator;   // Интегральная часть.
+    Diff_Struct diff;       // Дифференциальная часть.
+
+    float bc;        // Переменная обратной связи в алгоритме Back-calculation.
+
+    struct
+    {
+        float min;  // Мин. значение выхода.
+        float max;  // Макс. значение выхода.
+
+    } sat;  // Структура с параметрами ограничителя выхода.
+
+} PID_Controller_Struct;    // Структура параметров ПИД-регулятора.
 
 typedef struct
 {
@@ -85,34 +112,6 @@ typedef struct
 
 } SShapedRamp_Struct;   // Структура параметров S-образного задатчика.
 
-typedef struct
-{
-	 float k;// коэффициент дифференцатора
-	 float xz;// переменная для хранения предыдущего значения входа
-
-} Diff_Struct;    // Структура параметров дифференциатора.
-
-typedef struct
-{
-	 float kp;// коэффициент пропорциональной части
-
-	 Integrator_Struct integrator;
-
-	 Diff_Struct diff;//Дифференциальная часть
-	    struct
-	    {
-	        float min;  // Мин. значение суммы.
-	        float max;  // Макс. значение суммы.
-
-	    } sat;  // Структура с параметрами ограничителя выхода.
-
-
-} PID_Controller_Struct;    // Структура параметров PID.
-
-
-
-
-
 float MovingFloatFilter(MovingFloatFilter_Struct * filter, float x);
 float MedianFloatFilter(MedianFloatFilter_Struct * filter, float x);
 float Low_Filter_1st_Order(Low_Filter_1st_Order_Struct * filter, float x);
@@ -121,8 +120,14 @@ float DirectFormI_FloatFilter(DigitalFilter_Struct * filter, float x);
 
 float BackwardEuler_Integrator(Integrator_Struct * integrator, float x);
 float Trapezoidal_Integrator(Integrator_Struct * integrator, float x);
-float BackwardEuler_Diff(Diff_Struct*diff, float x);
+float BackwardEuler_Kahan_Integrator(Integrator_Struct * integrator, float x);
+float Trapezoidal_Kahan_Integrator(Integrator_Struct * integrator, float x);
+
+float BackwardEuler_Diff(Diff_Struct * diff, float x);
+
 float PID_Controller(PID_Controller_Struct * pid, float x);
+float PID_BackCalc_Controller(PID_Controller_Struct * pid, float x);
+float PID_Clamp_Controller(PID_Controller_Struct * pid, float x);
 
 float Linear_Ramp(LinearRamp_Struct * ramp, float x);
 float SShaped_Ramp(SShapedRamp_Struct * ramp, float x);

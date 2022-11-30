@@ -215,7 +215,7 @@ float DirectFormI_FloatFilter(DigitalFilter_Struct * filter, float x)
 }
 
 /**
- * \brief       Функция интегратора методами прямоугольников (Backward Euler).
+ * \brief       Функция интегратора методом прямоугольников (Backward Euler).
  *
  * \param       integrator: структура с параметрами интегратора.
  * \param       x: вход интегратора.
@@ -231,8 +231,37 @@ float BackwardEuler_Integrator(Integrator_Struct * integrator, float x)
     // Возвращаем значение суммы.
     return integrator->sum;
 }
+
 /**
- * \brief       Функция интегратора методами трапеций (Trapezoidal).
+ * \brief       Функция интегратора методом прямоугольников (Backward Euler)
+ *              с алгоритмом компенсационного суммирования Кэхэна.
+ *
+ * \param       integrator: структура с параметрами интегратора.
+ * \param       x: вход интегратора.
+ *
+ * \return      y: сумму интегратора (выход).
+ *
+ */
+float BackwardEuler_Kahan_Integrator(Integrator_Struct * integrator, float x)
+{
+    // y = input - c.
+    float y = integrator->k * x - integrator->c;
+
+    // t = sum + y.
+    float t = integrator->sum + y;
+
+    // c = (t - sum) - y.
+    integrator->c = (t - integrator->sum) - y;
+
+    // Накапливаем сумму.
+    integrator->sum = LIMIT(t, integrator->sat.min, integrator->sat.max);
+
+    // Возвращаем значение суммы.
+    return integrator->sum;
+}
+
+/**
+ * \brief       Функция интегратора методом трапеций (Trapezoidal).
  *
  * \param       integrator: структура с параметрами интегратора.
  * \param       x: вход интегратора.
@@ -242,53 +271,121 @@ float BackwardEuler_Integrator(Integrator_Struct * integrator, float x)
  */
 float Trapezoidal_Integrator(Integrator_Struct * integrator, float x)
 {
-    // y[n]=s[n-1]+x[n]*k.
-    float out = LIMIT(integrator->sum+x*integrator->k, integrator->sat.min, integrator->sat.max);
-	//s[n]=y[n]+x[n]*k.
-    integrator->sum = out+ x*integrator->k ;
+    // out[n] = s[n-1] + x[n] * k.
+    float out = LIMIT(integrator->sum + x * integrator->k, integrator->sat.min, integrator->sat.max);
 
-    // Возвращаем значение суммы.
+    // s[n] = out[n] + x[n] * k.
+    integrator->sum = out + x * integrator->k;
+
     return out;
 }
 
-
-float BackwardEuler_Diff(Diff_Struct*diff, float x)
+/**
+ * \brief       Функция интегратора методом трапеций (Trapezoidal)
+ *              с алгоритмом компенсационного суммирования Кэхэна.
+ *
+ * \param       integrator: структура с параметрами интегратора.
+ * \param       x: вход интегратора.
+ *
+ * \return      y: сумму интегратора (выход).
+ *
+ */
+float Trapezoidal_Kahan_Integrator(Integrator_Struct * integrator, float x)
 {
-	//y[n] = ()
-	float out = (x - diff->xz)*diff->k;
+    // out[n] = s[n-1] + x[n] * k.
+    float out = LIMIT(integrator->sum + x * integrator->k, integrator->sat.min, integrator->sat.max);
 
-	// Сохраняем текущее значение х для следующего расчета
-	diff->xz=x;
+    // y = input - c.
+    float y = 2.f * x * integrator->k - integrator->c;
 
-	return out;
+    // t = sum + y.
+    float t = integrator->sum + y;
 
+    // c = (t - sum) - y.
+    integrator->c = (t - integrator->sum) - y;
+
+    // s[n] = out[n] + x[n] * k.
+    integrator->sum = t;
+
+    return out;
 }
 
 /**
- * \brief       Функция ПИД регулятора.
+ * \brief       Функция дифференциатора методом Эйлера (Backward Euler).
+ *
+ * \param       diff: структура с параметрами дифференциатором.
+ * \param       x: вход дифференциатора.
+ *
+ * \return      y: выход дифференциатора.
+ *
+ */
+float BackwardEuler_Diff(Diff_Struct * diff, float x)
+{
+    // y[n] = (x[n] - x[n-1]) * k.
+    float out = (x - diff->xz) * diff->k;
+
+    // Сохраняем текущее значение x для следующего расчёта.
+    diff->xz = x;
+
+    return out;
+}
+
+/**
+ * \brief       Функция ПИД-регулятора.
  *
  * \param       pid: структура с параметрами регулятора.
- * \param       x: вход задатчика.
+ * \param       x: вход регулятора.
  *
- * \return      y: выход задатчика.
+ * \return      y: выход регулятора.
  *
  */
 float PID_Controller(PID_Controller_Struct * pid, float x)
 {
-    // расчет пропорциональной части
-    float out_p = x*pid->kp;
+    // Расчёт пропорциональной части.
+    float out_p = x * pid->kp;
 
-    // расчет пропорциональной части
+    // Расчёт интегральной части.
     float out_i = Trapezoidal_Integrator(&pid->integrator, x);
 
-    // расчет пропорциональной части
+    // Расчёт дифференциальной части.
     float out_d = BackwardEuler_Diff(&pid->diff, x);
 
+    return LIMIT(out_p + out_i + out_d, pid->sat.min, pid->sat.max);
+}
 
-    return LIMIT(out_p+out_i+out_d, pid->sat.min, pid->sat.max);
+/**
+ * \brief       Функция ПИД-регулятора с защитой от насыщения интегратора
+ *              методом Back-Calculation.
+ *
+ * \param       pid: структура с параметрами регулятора.
+ * \param       x: вход регулятора.
+ *
+ * \return      y: выход регулятора.
+ *
+ */
+float PID_BackCalc_Controller(PID_Controller_Struct * pid, float x)
+{
+    // Расчёт пропорциональной части.
+    float out_p = x * pid->kp;
 
-    }
+    // Расчёт интегральной части.
+    float out_i = Trapezoidal_Integrator(&pid->integrator, x + pid->bc);
 
+    // Расчёт дифференциальной части.
+    float out_d = BackwardEuler_Diff(&pid->diff, x);
+
+    // Выход регулятора до ограничения.
+    float out = out_p + out_i + out_d;
+
+    // Выход регулятора после ограничения.
+    float out_limit = LIMIT(out, pid->sat.min, pid->sat.max);
+
+    // bc = (us - u) * kb.
+    // kb = 1 / Tt / ki.
+    pid->bc = (out_limit - out) * pid->kb;
+
+    return out_limit;
+}
 
 /**
  * \brief       Функция линейного задатчика.

@@ -38,11 +38,14 @@ int main(void)
 
     init_INTERRUPT();
     init_RCC();
+    init_DAC();
     init_GPIO();
     init_DMA();
     init_ADC();
     init_TIMER8();
-    init_DAC();
+
+    // Ожидание включения периферии.
+    for(int i = 0; i < 5000; i++);
 
     // Глобальное включение прерываний.
     __enable_irq();
@@ -60,8 +63,9 @@ int main(void)
         // Проверяем PB2 (SW2) на ноль.
         if (!(GPIOB->IDR & (1 << 2)))
         {
-        	extern float REF_CONTROLLER;
-        	REF_CONTROLLER = 1.f;
+            extern float REF_CONTROLLER;
+
+            REF_CONTROLLER = IL_REF_1;
 
             timer_PWM_On();
             GPIOD->ODR &= ~((1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5));

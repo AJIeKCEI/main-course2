@@ -4,7 +4,29 @@
 #include "dsp.h"
 #include "timer.h"
 
-Control_Struct Boost_Control;
+Control_Struct Boost_Control =
+{
+    .pid_current =
+    {
+        // Пропорциональный коэффициент.
+        .kp = 0.133399262551201,
+
+        .integrator =
+        {
+            // Интегральный коэффициент.
+            .k = 438.310314391716 * (TS / 2.),
+            .sat = { .min = 0.02, .max = 0.98 }
+        },
+
+        .diff =
+        {
+            // Дифференциальный коэффициент.
+            .k = 2.09748906707283e-7 * FS
+        },
+
+        .sat = { .min = 0.02, .max = 0.98 }
+    }
+};
 Measure_Struct Boost_Measure =
 {
 #define V25 (0.76)
@@ -30,8 +52,8 @@ Measure_Struct Boost_Measure =
         .in = 9.8970e-04
     },
 
-    .dac[0] = { .shift = 0, .scale = 4095.*3./3.3 },
-    .dac[1] = { .shift = 0, .scale = 4095.*3./3.3 },
+    .dac[0] = { .shift = 0, .scale = 4095. },
+    .dac[1] = { .shift = 0, .scale = 4095. },
 };
 Protect_Struct Boost_Protect =
 {
@@ -57,7 +79,7 @@ LinearRamp_Struct LINEAR_RAMP =
 {
     .integrator =
     {
-        .k = 0.25 * TS,
+        .k = 1. / 10. * TS,
         .sat = { .min = -999999., .max = 999999. }
     }
 };
@@ -81,16 +103,32 @@ SShapedRamp_Struct SSHAPED_RAMP =
 
 PID_Controller_Struct PID_CONTROLLER =
 {
-		.kp=0.5,
-		.integrator =
-		{
-			.k = 0.5/0.05 *(TS/2.),
-			.sat = { .min = 0., .max = 1. }
-		},
-		.sat = { .min = 0., .max = 1. }
+    .kp = 0.5,
+
+    .integrator =
+    {
+        .k = 0.5 / 0.05 * (TS / 2.),
+        .sat = { .min = 0., .max = 1. }
+    },
+
+    .sat = { .min = 0., .max = 1. }
 };
 
-float REF_CONTROLLER = 0;
+PID_Controller_Struct PID_BC_CONTROLLER =
+{
+    .kp = 0.5,
+    .kb = 1000. / (0.5 / 0.05),
+
+    .integrator =
+    {
+        .k = 0.5 / 0.05 * (TS / 2.),
+        .sat = { .min = -9999., .max = 9999. }
+    },
+
+    .sat = { .min = 0., .max = 1. }
+};
+
+float REF_CONTROLLER = 0.;
 
 void shift_and_scale(void);
 void set_shifts(void);
@@ -114,19 +152,26 @@ void DMA2_Stream0_IRQHandler(void)
     // Автоопределение смещений.
     set_shifts();
 
-    // 0.4 - номинальный коэфф. заполнения.
-    // 0.04 - 10% от номинального коэфф. заполнения.
-    // 1.65 - макс. амплитуда переменной составляющей инжектируемого сигнала в [В].
-    Boost_Control.duty = 0.6f + Boost_Measure.data.inj * (0.04f/1.65f);
+    // Линейный задатчик уставки тока реактора.
+    float iL_ramp = Linear_Ramp(&LINEAR_RAMP, REF_CONTROLLER);
+
+    // Ошибка регулирования тока реактора.
+    float error = iL_ramp - Boost_Measure.data.iL;
+
+    // Расчёт ПИД-регулятора тока реактора.
+    float out = PID_Controller(&Boost_Control.pid_current, error);
+
+    // Выводим переменную на ЦАП2.
+    Boost_Measure.dac[1].data = out;
+
+    // Расчёт коэффициента заполнения.
+    Boost_Control.duty = out + Boost_Measure.data.inj*0;
+
+    // Выводим переменную на ЦАП1.
+    Boost_Measure.dac[0].data = Boost_Control.duty;
 
     // Регистр сравнения: ARR * (коэфф. заполнения).
     TIM8->CCR1 = TIM8->ARR * LIMIT(Boost_Control.duty, Boost_Protect.sat.duty_min, Boost_Protect.sat.duty_max);
-
-    // Выводим переменную на ЦАП1.
-    Boost_Measure.dac[0].data = PID_Controller(&PID_CONTROLLER, REF_CONTROLLER);
-
-    // Выводим переменную на ЦАП2.
-    Boost_Measure.dac[1].data = 0;
 
     // Пересчитываем внутренние переменные в значения регистров ЦАП1 и ЦАП2.
     unsigned int dac1 = Boost_Measure.dac[0].scale * Boost_Measure.dac[0].data + Boost_Measure.dac[0].shift;
