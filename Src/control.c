@@ -113,22 +113,11 @@ PID_Controller_Struct PID_CONTROLLER =
 
     .sat = { .min = 0., .max = 1. }
 };
-
-PID_Controller_Struct PID_BC_CONTROLLER =
-{
-    .kp = 0.5,
-    .kb = 1000. / (0.5 / 0.05),
-
-    .integrator =
-    {
-        .k = 0.5 / 0.05 * (TS / 2.),
-        .sat = { .min = -9999., .max = 9999. }
-    },
-
-    .sat = { .min = 0., .max = 1. }
-};
+//
 
 float REF_CONTROLLER = 0.;
+
+unsigned int TIC, TOC;
 
 void shift_and_scale(void);
 void set_shifts(void);
@@ -137,11 +126,12 @@ void integral_protect(void);
 
 void DMA2_Stream0_IRQHandler(void)
 {
-    // Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
+    TIC = DWT->CYCCNT;
+	// Сброс флага прерывания DMA2_Stream0 по окончанию передачи данных.
     DMA2->LIFCR |= DMA_LIFCR_CTCIF0;
 
     // Ожидание выполнения всех инструкций в конвейере (pipeline).
-    __ISB();
+    // __ISB();
 
     // Пересчёт значений из ADC_Buffer в физические величины.
     shift_and_scale();
@@ -152,33 +142,53 @@ void DMA2_Stream0_IRQHandler(void)
     // Автоопределение смещений.
     set_shifts();
 
+    static unsigned int cnt =0;
+
+    cnt ++;
+    if(cnt<50)	//50=(0.01/2)*FS
+    	REF_CONTROLLER = 3.5F;
+    else if (cnt<100)
+    	REF_CONTROLLER = 4.5F;
+    else
+    	cnt=0;
+
+    //уСТАВКА ТОКА
+    REF_CONTROLLER = 4.F;
     // Линейный задатчик уставки тока реактора.
-    float iL_ramp = Linear_Ramp(&LINEAR_RAMP, REF_CONTROLLER);
+  //  float iL_ramp = Linear_Ramp(&LINEAR_RAMP, REF_CONTROLLER);
 
     // Ошибка регулирования тока реактора.
-    float error = iL_ramp - Boost_Measure.data.iL;
+    float error = REF_CONTROLLER - Boost_Measure.data.iL;
 
     // Расчёт ПИД-регулятора тока реактора.
     float out = PID_Controller(&Boost_Control.pid_current, error);
 
     // Выводим переменную на ЦАП2.
-    Boost_Measure.dac[1].data = out;
+
+    float dac2_data = out;
+    //Boost_Measure.dac[1].data = out;
 
     // Расчёт коэффициента заполнения.
-    Boost_Control.duty = out + Boost_Measure.data.inj*0;
+    Boost_Control.duty = out + Boost_Measure.data.inj*(0.04f/1.65f);
 
     // Выводим переменную на ЦАП1.
-    Boost_Measure.dac[0].data = Boost_Control.duty;
+    float dac1_data = Boost_Control.duty;
+    //Boost_Measure.dac[0].data = Boost_Control.duty;
 
     // Регистр сравнения: ARR * (коэфф. заполнения).
     TIM8->CCR1 = TIM8->ARR * LIMIT(Boost_Control.duty, Boost_Protect.sat.duty_min, Boost_Protect.sat.duty_max);
 
     // Пересчитываем внутренние переменные в значения регистров ЦАП1 и ЦАП2.
-    unsigned int dac1 = Boost_Measure.dac[0].scale * Boost_Measure.dac[0].data + Boost_Measure.dac[0].shift;
-    unsigned int dac2 = Boost_Measure.dac[1].scale * Boost_Measure.dac[1].data + Boost_Measure.dac[1].shift;
+    unsigned int dac1 = Boost_Measure.dac[0].scale * dac1_data + Boost_Measure.dac[0].shift;
+    unsigned int dac2 = Boost_Measure.dac[1].scale * dac2_data + Boost_Measure.dac[1].shift;
+
+   // unsigned int dac1 = Boost_Measure.dac[0].scale * Boost_Measure.dac[0].data + Boost_Measure.dac[0].shift;
+   // unsigned int dac2 = Boost_Measure.dac[1].scale * Boost_Measure.dac[1].data + Boost_Measure.dac[1].shift;
 
     // Запись чисел в ЦАП1 и ЦАП2.
     DAC->DHR12RD = dac1 | (dac2 << 16);
+
+    TOC = DWT->CYCCNT-TIC;
 }
 
 /**
@@ -273,7 +283,7 @@ void integral_protect(void)
         Boost_Protect.iL_int_sum = 0;
 
     // Проверяем условие срабатывания защиты.
-    if (Boost_Protect.iL_int_sum > Boost_Protect.iL_int_max)
+    else if (Boost_Protect.iL_int_sum > Boost_Protect.iL_int_max)
     {
         Boost_Protect.iL_int_sum = 0;
         timer_PWM_Off();

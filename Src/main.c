@@ -17,7 +17,10 @@
  */
 
 #include <stdint.h>
+#include <math.h>
 #include "stm32f7xx.h"
+
+#include "arm_math.h"
 
 #include "rcc.h"
 #include "gpio.h"
@@ -30,11 +33,20 @@
 #include "control.h"
 
 volatile float TEMPERATURE;
+volatile float arg_rad;
 
 int main(void)
 {
+    // Включение DWT (счётчик тактов, Program Counter)
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Armv7-M Architecture Reference Manual, p. C1-706.
+    DWT->LAR = 0xC5ACCE55;                          // ARM CoreSight Architecture Specification (v3.0), p. B2-61.
+    DWT->CYCCNT = 0;                                // Armv7-M Architecture Reference Manual, p. C1-731.
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;            // Armv7-M Architecture Reference Manual, p. C1-740.
+
     // Глобальное отключение прерываний.
     __disable_irq();
+
+    //init_INTERRUPT();
 
     init_INTERRUPT();
     init_RCC();
@@ -74,9 +86,40 @@ int main(void)
 }
 
 
+void SINE_COSINE_FUNCTION(void)
+{
+float sin[4], csine[4];
+
+cost float arg_rad = arg*(float)MP_I/180.f;
+
+// Функции из стандартной библиотеки языка си
+TIC = DWT->CYCCNT;
+sine[0]= sinf(arg_rad);
+cosine[0] = cosf(arg_rad);
+
+TOC[0] = DWT->CYCCNT - TIC;
+TIC = DWT->CYCCNT;
+
+sine[1] = arm_sin_f32(arg_rad);
+cosine[1]= arm_cosine_f32(arg_rad);
+
+TOC[1] = DWT->CYCCNT - TIC;
+TIC = DWT->CYCCNT;
+
+arm_sin_cos_f32(arg_rad);
+cosine[1]= arm_cosine_f32(arg_rad);
+
+TOC[1] = DWT->CYCCNT - TIC;
+TIC = DWT->CYCCNT;
+
+}
+
+void float asinf()
+{
 
 
 
+}
 
 
 

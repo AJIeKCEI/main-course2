@@ -6,37 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-MovingFloatFilter_Struct FILTER_MOV;
-MedianFloatFilter_Struct FILTER_MED;
-Low_Filter_1st_Order_Struct FILTER_1ORD =
-{
-    .b0 = TS / (TAU_1ORD + TS),
-    .a1 = -TAU_1ORD / (TAU_1ORD + TS)
-};
 
-// Фильтр нижних частот.
-DigitalFilter_Struct FILTER_DIG1 =
-{
-    .b[0] = 0.013359200027857,
-    .b[1] = 0.026718400055713,
-    .b[2] = 0.013359200027857,
-
-    .a[0] = 1,
-    .a[1] = -1.647459981076977,
-    .a[2] = 0.700896781188403
-};
-
-// Фильтр режекторный.
-DigitalFilter_Struct FILTER_DIG2 =
-{
-    .b[0] = 0.993755964953657,
-    .b[1] = -1.925108587845861,
-    .b[2] = 0.993755964953657,
-
-    .a[0] = 1,
-    .a[1] = -1.925108587845860,
-    .a[2] = 0.987511929907314
-};
 
 /**
  * \brief       Функция фильтра скользящего среднего.
@@ -47,7 +17,7 @@ DigitalFilter_Struct FILTER_DIG2 =
  * \return      y: среднее значение.
  *
  */
-float MovingFloatFilter(MovingFloatFilter_Struct * filter, float x)
+float  MovingFloatFilter(MovingFloatFilter_Struct * filter, float x)
 {
     // Отнимаем от суммы [n-1] точку и прибавляем [0] точку.
     filter->sum = filter->sum - filter->buf[filter->pointer] + x;
